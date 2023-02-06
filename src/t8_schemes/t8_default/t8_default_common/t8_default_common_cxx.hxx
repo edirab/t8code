@@ -63,6 +63,15 @@ public:
   virtual t8_gloidx_t t8_element_count_leafs (const t8_element_t *t,
                                               int level);
 
+  /** Compute the maximum number of siblings of an element or any descendants of it. That is the number of 
+   * Children of its parent.
+   * \param [in] elem The element.
+   * \return          The maximum number of siblings of \a element.
+   * Note that this number is >= 1, since we count the element itself as a sibling.
+   */
+  virtual int         t8_element_max_num_siblings (const t8_element_t *elem)
+    const;
+
   /** Compute the number of siblings of an element. That is the number of 
    * Children of its parent.
    * \param [in] elem The element.
@@ -93,6 +102,115 @@ public:
                                                    const void *indata,
                                                    void *outdata);
 
+  /** This function refines a parent element into subelements.
+   *  Depending on the subelement type, the number of subelements 
+   *  to fill the parent element, can differ.
+   *  \param [in] elem A valid element
+   *  \param [in] type The subelement type
+   *  \param [out] subelements An array of all subelements of the parent quad element elem
+   */
+  virtual void        t8_element_to_transition_cell (const t8_element_t *elem,
+                                                     int type,
+                                                     t8_element_t *c[]);
+
+  /** Check whether the neighbors of an element at a specic face are siblings
+   *  \param [in] elem A valid element 
+   *  \param [in] elem_face A valid face 
+   *  \return true if the neighbor of elem at face elem_face is a sibling.
+   */
+  virtual int         t8_element_neighbor_is_sibling (const t8_element * elem,
+                                                      const int elem_face)
+    const;
+
+  /** Check whether the neighbors of an element at a specic face are siblings
+   *  \param [in] elem A valid element 
+   *  \param [in] elem_face A valid face 
+   *  \return return the number of sibling neighbors at a given face.
+   */
+  virtual int         t8_element_get_num_sibling_neighbors_at_face (const
+                                                                    t8_element
+                                                                    * elem,
+                                                                    const int
+                                                                    elem_face)
+    const;
+
+  /** Return zero refine value for schemes that do not have a transition implementation.
+   *  \param [in] elem A valid element 
+   *  \return Integer, used as the refine value during transition adaptation.
+   */
+  virtual int         t8_element_get_transition_refine_identifier (void)
+    const;
+
+  virtual void
+     
+     
+     
+     t8_element_get_sibling_neighbor_in_transition_cell (const t8_element_t
+                                                         *elem,
+                                                         const int face,
+                                                         const int
+                                                         num_neighbors,
+                                                         t8_element_t
+                                                         *neighbor_at_face[],
+                                                         int *neigh_face[]);
+
+  /** Check whether a given element is a subelement
+   *  \param [in] elem A valid element 
+   *  \return true if elem is a subelement 
+   */
+  virtual int         t8_element_is_subelement (const t8_element *
+                                                elem) const;
+
+  /** Return 1 if the eclass scheme has an implementation for subelements. Return 0 otherwise. */
+  virtual int         t8_element_scheme_supports_transitioning (void);
+
+  /** Return 1 if the eclass scheme has an implementation for subelements which is conformal. */
+  virtual int         t8_element_transition_scheme_is_conformal (void);
+
+  /** Return the number of subelements in a transition cell of type transition_type
+   *  \param [in] transition_type The subelement type as an integer
+   *  \return the number of subelements, this transition cell consists of
+   */
+  virtual int         t8_element_get_number_of_subelements (int
+                                                            transition_type);
+
+  /** Return the transition type of an element
+   *  \param [in] elem A valid element 
+   *  \return the transition type of elem (0 if elem is no subelement) 
+   */
+  virtual int         t8_element_get_transition_type (const
+                                                      t8_element * elem);
+
+  /** Return the face number of the hypotensue of a given subelement 
+   *  \param [in] elem A valid subelement
+   *  \return the subelement id of elem
+   */
+  virtual int         t8_element_get_face_number_of_hypotenuse (const
+                                                                t8_element *
+                                                                elem);
+
+  /** Return the subelement id of a given element. 
+   *  \param [in] elem A valid element 
+   *  \return the subelement id of elem (0 if elem is no subelement)
+   */
+  virtual int         t8_element_get_subelement_id (const t8_element * elem);
+
+  /** Return the subelement id of the neighbor subelement of elem at face elem_face
+  *   that is a sibling of the subelement neigh. 
+  *  \param [in] elem a given element (possibly subelement)
+  *  \param [in] neigh a random subelement (pseudoneighbor) in a transition cell from which we assume that it owns the real neighbor of elem
+  *  \param [in] elem_face a given face number of element elem
+  *  \return the subelement id of the real subelement neighbor of element elem, which is a sibling of neigh.
+  */
+  virtual int         t8_element_find_neighbor_in_transition_cell (const
+                                                                   t8_element_t
+                                                                   *elem,
+                                                                   const
+                                                                   t8_element_t
+                                                                   *neigh,
+                                                                   int
+                                                                   elem_face);
+
   /** Compute the integer coordinates of a given element vertex.
    * The default scheme implements the Morton type SFCs. In these SFCs the
    * elements are positioned in a cube [0,1]^(dL) with dimension d (=0,1,2,3) and 
@@ -118,6 +236,7 @@ public:
    */
   virtual void        t8_element_anchor (const t8_element_t *elem,
                                          int anchor[3]) = 0;
+
 };
 
 #endif /* !T8_DEFAULT_COMMON_CXX_HXX */

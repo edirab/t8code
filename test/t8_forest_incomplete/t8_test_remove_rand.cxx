@@ -39,11 +39,10 @@ t8_adapt_callback_remove (t8_forest_t forest,
                           t8_locidx_t lelement_id,
                           t8_eclass_scheme_c *ts,
                           const int is_family,
-                          const int num_elements, 
-                          t8_element_t *elements[])
+                          const int num_elements, t8_element_t *elements[])
 {
-  if (rand()%4) {
-      return -2;
+  if (rand () % 4) {
+    return -2;
   }
   return 0;
 }
@@ -55,10 +54,9 @@ t8_adapt_callback_coarse (t8_forest_t forest,
                           t8_locidx_t lelement_id,
                           t8_eclass_scheme_c *ts,
                           const int is_family,
-                          const int num_elements, 
-                          t8_element_t *elements[])
+                          const int num_elements, t8_element_t *elements[])
 {
-  if (is_family && rand()%10) {
+  if (is_family && rand () % 10) {
     return -1;
   }
   return 0;
@@ -71,23 +69,22 @@ t8_adapt_callback_refine (t8_forest_t forest,
                           t8_locidx_t lelement_id,
                           t8_eclass_scheme_c *ts,
                           const int is_family,
-                          const int num_elements, 
-                          t8_element_t *elements[])
+                          const int num_elements, t8_element_t *elements[])
 {
-  int level_cut;
-  int level = ts->t8_element_level (elements[0]);
-  int level_max = ts->t8_element_maxlevel();
-  
+  int                 level_cut;
+  int                 level = ts->t8_element_level (elements[0]);
+  int                 level_max = ts->t8_element_maxlevel ();
+
 #if T8_ENABLE_LESS_TESTS
-  level_cut = (int)(0.2*level_max);
+  level_cut = (int) (0.2 * level_max);
 #else
-  level_cut = (int)(0.3*level_max);
+  level_cut = (int) (0.3 * level_max);
 #endif
 
-  if (rand()%4 > 0 && level < level_cut) {
+  if (rand () % 4 > 0 && level < level_cut) {
     return 1;
   }
-  if (rand()%4 == 0) {
+  if (rand () % 4 == 0) {
     return -2;
   }
   return 0;
@@ -96,9 +93,7 @@ t8_adapt_callback_refine (t8_forest_t forest,
 static t8_forest_t
 t8_adapt_forest (t8_forest_t forest_from,
                  t8_forest_adapt_t adapt_fn,
-                 int do_partition,
-                 int recursive,
-                 int do_face_ghost)
+                 int do_partition, int recursive, int do_face_ghost)
 {
   t8_forest_t         forest_new;
 
@@ -139,20 +134,21 @@ t8_test_elements_remove (int cmesh_id)
 
   for (level = level_min; level < level_max; level++) {
     t8_cmesh_ref (cmesh);
-    forest = t8_forest_new_uniform (cmesh, scheme, level, 0, sc_MPI_COMM_WORLD);
+    forest =
+      t8_forest_new_uniform (cmesh, scheme, level, 0, sc_MPI_COMM_WORLD);
     for (int i = 0; i < level + 1; i++) {
-        forest = t8_adapt_forest (forest, t8_adapt_callback_refine, 0, 0, 0);
-        forest = t8_adapt_forest (forest, t8_adapt_callback_remove, 0, 0, 0);
+      forest = t8_adapt_forest (forest, t8_adapt_callback_refine, 0, 0, 0);
+      forest = t8_adapt_forest (forest, t8_adapt_callback_remove, 0, 0, 0);
     }
     forest = t8_adapt_forest (forest, t8_adapt_callback_refine, 0, 1, 0);
-    for (int i = 0; i < 2*level_max; i++) {
+    for (int i = 0; i < 2 * level_max; i++) {
       forest = t8_adapt_forest (forest, t8_adapt_callback_coarse, 0, 0, 0);
       forest = t8_adapt_forest (forest, t8_adapt_callback_coarse, 0, 0, 0);
       SC_CHECK_ABORT (t8_forest_no_overlap (forest),
-          "The local forest has overlapping elements.");
+                      "The local forest has overlapping elements.");
       forest = t8_adapt_forest (forest, t8_adapt_callback_coarse, 0, 1, 0);
       SC_CHECK_ABORT (t8_forest_no_overlap (forest),
-          "The local forest has overlapping elements.");
+                      "The local forest has overlapping elements.");
     }
     t8_scheme_cxx_ref (scheme);
     t8_forest_unref (&forest);
@@ -165,7 +161,8 @@ void
 t8_test_cmesh_elements_remove_all ()
 {
   /* Test all cmeshes over all different inputs we get through their id */
-  for (int cmesh_id = 0; cmesh_id < t8_get_number_of_all_testcases (); cmesh_id++) {
+  for (int cmesh_id = 0; cmesh_id < t8_get_number_of_all_testcases ();
+       cmesh_id++) {
     t8_test_elements_remove (cmesh_id);
   }
 }
@@ -183,10 +180,10 @@ main (int argc, char **argv)
   sc_init (mpic, 1, 1, NULL, SC_LP_PRODUCTION);
   t8_init (SC_LP_DEFAULT);
 
-  unsigned int seed;
-  seed = time(0);
-  srand(seed);
-  t8_global_productionf("Seed: %u \n", seed);
+  unsigned int        seed;
+  seed = time (0);
+  srand (seed);
+  t8_global_productionf ("Seed: %u \n", seed);
 
   t8_test_cmesh_elements_remove_all ();
 

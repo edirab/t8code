@@ -38,14 +38,14 @@ t8_adapt_callback_remove_but_last (t8_forest_t forest,
                                    t8_locidx_t lelement_id,
                                    t8_eclass_scheme_c *ts,
                                    const int is_family,
-                                   const int num_elements, 
+                                   const int num_elements,
                                    t8_element_t *elements[])
 {
   int                 num_children;
   int                 child_id;
   num_children = ts->t8_element_num_children (elements[0]);
-  child_id     = ts->t8_element_child_id (elements[0]);
-  if (num_children-1 != child_id) {
+  child_id = ts->t8_element_child_id (elements[0]);
+  if (num_children - 1 != child_id) {
     return -2;
   }
   return 0;
@@ -58,7 +58,7 @@ t8_adapt_callback_remove_but_first (t8_forest_t forest,
                                     t8_locidx_t lelement_id,
                                     t8_eclass_scheme_c *ts,
                                     const int is_family,
-                                    const int num_elements, 
+                                    const int num_elements,
                                     t8_element_t *elements[])
 {
   int                 child_id;
@@ -76,8 +76,7 @@ t8_adapt_callback_coarse (t8_forest_t forest,
                           t8_locidx_t lelement_id,
                           t8_eclass_scheme_c *ts,
                           const int is_family,
-                          const int num_elements, 
-                          t8_element_t *elements[])
+                          const int num_elements, t8_element_t *elements[])
 {
   if (is_family) {
     return -1;
@@ -92,19 +91,19 @@ t8_adapt_callback_refine_recursive (t8_forest_t forest,
                                     t8_locidx_t lelement_id,
                                     t8_eclass_scheme_c *ts,
                                     const int is_family,
-                                    const int num_elements, 
+                                    const int num_elements,
                                     t8_element_t *elements[])
 {
   int                 child_id;
   int                 level;
   int                 level_max;
-  
-  level    = ts->t8_element_level (elements[0]);
-  level_max = ts->t8_element_maxlevel();
+
+  level = ts->t8_element_level (elements[0]);
+  level_max = ts->t8_element_maxlevel ();
   child_id = ts->t8_element_child_id (elements[0]);
 
-  if (child_id == 0 && level < (int)(0.4*level_max)) {
-      return 1;
+  if (child_id == 0 && level < (int) (0.4 * level_max)) {
+    return 1;
   }
   return 0;
 }
@@ -116,7 +115,7 @@ t8_adapt_callback_refine_all (t8_forest_t forest,
                               t8_locidx_t lelement_id,
                               t8_eclass_scheme_c *ts,
                               const int is_family,
-                              const int num_elements, 
+                              const int num_elements,
                               t8_element_t *elements[])
 {
   return 1;
@@ -124,8 +123,7 @@ t8_adapt_callback_refine_all (t8_forest_t forest,
 
 static t8_forest_t
 t8_adapt_forest (t8_forest_t forest_from,
-                 t8_forest_adapt_t adapt_fn,
-                 int recursive)
+                 t8_forest_adapt_t adapt_fn, int recursive)
 {
   t8_forest_t         forest_new;
 
@@ -156,7 +154,8 @@ t8_test_elements_remove (int cmesh_id)
   /* Compute the first level, such that no process is empty */
   level_min = t8_forest_min_nonempty_level (cmesh, scheme);
 
-  forest = t8_forest_new_uniform (cmesh, scheme, level_min, 0, sc_MPI_COMM_WORLD);
+  forest =
+    t8_forest_new_uniform (cmesh, scheme, level_min, 0, sc_MPI_COMM_WORLD);
 
   /* T8_ECLASS_VERTEX cannot be coarsened recursively. */
   num_trees = t8_forest_get_num_local_trees (forest);
@@ -175,14 +174,15 @@ t8_test_elements_remove (int cmesh_id)
   forest = t8_adapt_forest (forest, t8_adapt_callback_coarse, 1);
 
   SC_CHECK_ABORT (t8_forest_no_overlap (forest),
-            "The local forest has overlapping elements.");
+                  "The local forest has overlapping elements.");
 
   t8_cmesh_ref (cmesh);
   t8_scheme_cxx_ref (scheme);
-  forest_base = t8_forest_new_uniform (cmesh, scheme, level_min, 0, sc_MPI_COMM_WORLD);
+  forest_base =
+    t8_forest_new_uniform (cmesh, scheme, level_min, 0, sc_MPI_COMM_WORLD);
   SC_CHECK_ABORT (t8_forest_is_equal (forest, forest_base),
-            "The forest are not equal.");
-  
+                  "The forest are not equal.");
+
   t8_forest_unref (&forest);
   t8_forest_unref (&forest_base);
 }
@@ -191,11 +191,11 @@ void
 t8_test_cmesh_elements_remove_all ()
 {
   /* Test all cmeshes over all different inputs we get through their id */
-  for (int cmesh_id = 0; cmesh_id < t8_get_number_of_all_testcases (); cmesh_id++) {
+  for (int cmesh_id = 0; cmesh_id < t8_get_number_of_all_testcases ();
+       cmesh_id++) {
     t8_test_elements_remove (cmesh_id);
   }
 }
-
 
 int
 main (int argc, char **argv)
@@ -211,7 +211,7 @@ main (int argc, char **argv)
   sc_init (mpic, 1, 1, NULL, SC_LP_PRODUCTION);
   t8_init (SC_LP_DEFAULT);
 
-  sc_MPI_Comm_size(mpic, &mpi_size);
+  sc_MPI_Comm_size (mpic, &mpi_size);
 
   SC_CHECK_ABORT (mpi_size == 1, "The test is only valid with one process.");
   t8_test_cmesh_elements_remove_all ();

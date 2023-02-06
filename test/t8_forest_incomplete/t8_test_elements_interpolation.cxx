@@ -18,7 +18,7 @@ struct t8_adapt_data
 {
   double              midpoint[3];
   double              radius;
-  double              *element_data;
+  double             *element_data;
 };
 
 int
@@ -108,8 +108,7 @@ t8_forest_replace (t8_forest_t forest_old,
                    int refine,
                    int num_outgoing,
                    t8_locidx_t first_outgoing,
-                   int num_incoming,
-                   t8_locidx_t first_incoming)
+                   int num_incoming, t8_locidx_t first_incoming)
 {
 
   struct t8_adapt_data *adapt_data_new =
@@ -117,23 +116,22 @@ t8_forest_replace (t8_forest_t forest_old,
   const struct t8_adapt_data *adapt_data_old =
     (const struct t8_adapt_data *) t8_forest_get_user_data (forest_old);
 
-  for (t8_locidx_t t = 0; t < which_tree; t++)
-  {
+  for (t8_locidx_t t = 0; t < which_tree; t++) {
     first_incoming += t8_forest_get_tree_num_elements (forest_new, t);
     first_outgoing += t8_forest_get_tree_num_elements (forest_old, t);
   }
 
   if (refine == 0) {
     T8_ASSERT (num_incoming == num_outgoing && num_incoming == 1);
-    adapt_data_new->element_data[first_incoming] = 
+    adapt_data_new->element_data[first_incoming] =
       adapt_data_old->element_data[first_outgoing];
   }
   else if (refine == -1) {
     T8_ASSERT (num_incoming == 1 && num_outgoing > 0);
     adapt_data_new->element_data[first_incoming] = 0;
     for (t8_locidx_t i = 0; i < num_outgoing; i++) {
-          adapt_data_new->element_data[first_incoming] +=
-            adapt_data_old->element_data[first_outgoing+i];
+      adapt_data_new->element_data[first_incoming] +=
+        adapt_data_old->element_data[first_outgoing + i];
     }
   }
   else if (refine == -2) {
@@ -143,21 +141,22 @@ t8_forest_replace (t8_forest_t forest_old,
     T8_ASSERT (false);
   }
 
-  t8_debugf("[IL] old %lf, new %lf \n ",
-    adapt_data_old->element_data[first_outgoing], 
-    adapt_data_new->element_data[first_incoming]);
+  t8_debugf ("[IL] old %lf, new %lf \n ",
+             adapt_data_old->element_data[first_outgoing],
+             adapt_data_new->element_data[first_incoming]);
 
 }
 
 t8_forest_t
 t8_adapt_forest (t8_forest_t forest_from, t8_forest_adapt_t adapt_fn,
-                 int do_partition, int recursive, int do_face_ghost, void *user_data)
+                 int do_partition, int recursive, int do_face_ghost,
+                 void *user_data)
 {
   t8_forest_t         forest_new;
 
   t8_forest_init (&forest_new);
   t8_forest_set_adapt (forest_new, forest_from, adapt_fn, recursive);
-  
+
   if (user_data != NULL) {
     t8_forest_set_user_data (forest_new, user_data);
   }
@@ -172,8 +171,7 @@ t8_adapt_forest (t8_forest_t forest_from, t8_forest_adapt_t adapt_fn,
 
 static void
 t8_output_data (t8_forest_t forest,
-                struct t8_adapt_data *data,
-                const char *prefix)
+                struct t8_adapt_data *data, const char *prefix)
 {
   t8_locidx_t         num_elements =
     t8_forest_get_local_num_elements (forest);
@@ -209,7 +207,8 @@ t8_output_data (t8_forest_t forest,
 }
 
 void
-t8_test_linear_interpolation() {
+t8_test_linear_interpolation ()
+{
   int                 level;
   t8_cmesh_t          cmesh;
   t8_forest_t         forest_adapt, forest;
@@ -227,7 +226,8 @@ t8_test_linear_interpolation() {
   level = 4;
 
   /* Construct a cmesh */
-  cmesh = t8_cmesh_new_hypercube (T8_ECLASS_PYRAMID, sc_MPI_COMM_WORLD, 0, 0, 0);
+  cmesh =
+    t8_cmesh_new_hypercube (T8_ECLASS_PYRAMID, sc_MPI_COMM_WORLD, 0, 0, 0);
 
   forest = t8_forest_new_uniform (cmesh, scheme, level, 0, sc_MPI_COMM_WORLD);
 
@@ -246,9 +246,8 @@ t8_test_linear_interpolation() {
     data
   };
   forest = t8_adapt_forest (forest, t8_adapt_non, 0, 0, 0, &adapt_data);
-  t8_output_data (forest, &adapt_data, 
-    "/home/ioannis/VBshare/paraview_export/t8_test_interpolation_forest");
- 
+  t8_output_data (forest, &adapt_data,
+                  "/home/ioannis/VBshare/paraview_export/t8_test_interpolation_forest");
 
   /* Coarse forest */
   t8_forest_ref (forest);
@@ -257,12 +256,14 @@ t8_test_linear_interpolation() {
     radius,
     NULL
   };
-  forest_adapt = t8_adapt_forest (forest, t8_adapt_coarse, 0, 0, 0, &adapt_data_adapt);
-  SC_CHECK_ABORT (t8_forest_no_overlap(forest_adapt),
+  forest_adapt =
+    t8_adapt_forest (forest, t8_adapt_coarse, 0, 0, 0, &adapt_data_adapt);
+  SC_CHECK_ABORT (t8_forest_no_overlap (forest_adapt),
                   "The forest has overlapping elements");
 
   /* Interpolate element data */
-  data_adapt = T8_ALLOC (double, t8_forest_get_local_num_elements (forest_adapt));
+  data_adapt =
+    T8_ALLOC (double, t8_forest_get_local_num_elements (forest_adapt));
   adapt_data_adapt = {
     {0, 0, 0},
     radius,
@@ -271,17 +272,14 @@ t8_test_linear_interpolation() {
 
   t8_forest_iterate_replace (forest_adapt, forest, t8_forest_replace);
 
-  t8_output_data (forest_adapt, &adapt_data_adapt, 
-    "/home/ioannis/VBshare/paraview_export/t8_test_interpolation_forest_adapt");
-    
+  t8_output_data (forest_adapt, &adapt_data_adapt,
+                  "/home/ioannis/VBshare/paraview_export/t8_test_interpolation_forest_adapt");
 
   T8_FREE (data);
   T8_FREE (data_adapt);
   t8_forest_unref (&forest);
   t8_forest_unref (&forest_adapt);
 }
-
-
 
 int
 main (int argc, char **argv)
@@ -296,7 +294,7 @@ main (int argc, char **argv)
   sc_init (mpic, 1, 1, NULL, SC_LP_PRODUCTION);
   t8_init (SC_LP_DEFAULT);
 
-  t8_test_linear_interpolation();
+  t8_test_linear_interpolation ();
 
   sc_finalize ();
 

@@ -57,6 +57,8 @@
 #endif
 #include <t8.h>
 #include <t8_forest.h>
+#include <t8_schemes/t8_default/t8_default_cxx.hxx>
+#include <t8_eclass.h>
 
 /* We want to export the whole implementation to be callable from "C" */
 T8_EXTERN_C_BEGIN ();
@@ -736,7 +738,6 @@ t8_forest_num_points (t8_forest_t forest, int count_ghosts)
       elem = t8_element_array_index_locidx (&tree->elements, ielem);
       num_points += tscheme->t8_element_num_corners (elem);
     }
-
   }
   if (count_ghosts) {
     T8_ASSERT (forest->ghosts != NULL);
