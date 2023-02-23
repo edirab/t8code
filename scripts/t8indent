@@ -80,10 +80,14 @@ INDENT_OPTIONS="$INDENT_BASE_OPTIONS $T8CODE_ADDITIONAL_DATATYPES"
 
 INDENT=`which gnuindent 2> /dev/null`
 if test -z "$INDENT" ; then
-	INDENT=`which gindent`
+	INDENT=`which gindent 2> /dev/null`
 fi
 if test -z "$INDENT" ; then
-	INDENT=`which indent`
+	INDENT=`which indent 2> /dev/null`
+fi
+if test -z "$INDENT" ; then
+	echo No indent found
+	exit 1
 fi
 
 for arg in "$@" ; do
